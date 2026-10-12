@@ -40,7 +40,7 @@ Po stlačení „Pridať cvik“ sa otvorí samostatná obrazovka alebo modal s 
 - vyhľadávať podľa názvu,
 - filtrovať aspoň podľa svalovej partie,
 - pridať cvik do svojho hubu,
-- vidieť, ktoré cviky už má pridané,
+- rozlíšiť už pridané cviky; aktuálna voľba je skryť ich a zobrazovať iba dostupné cviky,
 - vrátiť sa do hubu, kde sa nový cvik okamžite zobrazí.
 
 Katalóg bude obsahovať približne 100–200 najbežnejších cvikov. Bude súčasťou aplikácie ako lokálny read-only súbor; aplikácia ho nebude sťahovať cez API.

@@ -1,4 +1,5 @@
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { colors, radius } from "@/constants/theme";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 
 type ExerciseListItemProps = {
@@ -12,7 +13,10 @@ export function ExerciseListItem({name, muscle, equipment, onPress}: ExerciseLis
 {
     return (
         <Pressable
-            style = {styles.container}
+            style={({ pressed }) => [
+              styles.container,
+              { opacity: pressed ? 0.75 : 1 },
+            ]}
             onPress = {onPress}
         >
             <Text style={styles.name}>{name}</Text>
@@ -28,31 +32,30 @@ export function ExerciseListItem({name, muscle, equipment, onPress}: ExerciseLis
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 82,
+    minHeight: 88,
     justifyContent: "center",
     paddingHorizontal: 18,
-    paddingVertical: 16,
-    borderRadius: 18,
+    paddingVertical: 18,
+    borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#FFFFFF",
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
 
   name: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#17212B",
+    fontWeight: "600",
+    color: colors.text,
   },
 
   details: {
     flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 6,
-    backgroundColor: "#12148a"
   },
 
   detailText: {
     fontSize: 13,
-    color: "#d1d5db",
-    textTransform: "capitalize",
+    color: colors.textMuted,
   },
 });

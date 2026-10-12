@@ -1,6 +1,8 @@
 import type { Exercise } from "@/types/exercise";
+import { exerciseNamesSk } from "@/constants/exercise-labels";
+import { importedExercises } from "./imported-exercises";
 
-export const exercises = [
+const catalog = [
   {
 
     "id": "barbell-bench-press",
@@ -49,5 +51,11 @@ export const exercises = [
     "name": "Shoulder Press",
     "primaryMuscle": "shoulders",
     "equipment": "dumbell"
-  }
+  },
+  ...importedExercises
 ] satisfies Exercise[];
+
+export const exercises: Exercise[] = catalog.map((exercise) => ({
+  ...exercise,
+  name: exerciseNamesSk[exercise.id] ?? exercise.name,
+}));
