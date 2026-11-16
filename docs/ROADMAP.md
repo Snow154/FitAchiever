@@ -4,17 +4,30 @@ Roadmapa je rozdelená na malé vertikálne kroky. Každý krok má priniesť vi
 
 Pri každej fáze platí: route skladá obrazovku, samostatné UI časti majú vlastné komponenty, zdieľané doménové typy žijú v `src/types` a props ostávajú čo najmenšie. Refaktor robíme priebežne po fungujúcom kroku, nie vytvorením desiatok prázdnych súborov vopred.
 
-## Aktuálny milestone — detail, zápis sérií, história a lokálne ukladanie logov
+## Aktuálny milestone — mazanie, posledný výkon a dokončenie acceptance scenára
 
-Aktualizované 12. októbra 2026.
+Aktualizované 16. novembra 2026.
 
-Funguje navigácia medzi hubom, textovým offline katalógom so 62 cvikmi, dynamickým detailom a formulárom zápisu. `UserExercisesProvider` sprístupňuje zoznam aj `addUserExercise(exerciseId)` s immutable aktualizáciou a kontrolou duplicity. Katalóg skrýva pridané cviky. Hub ešte nemá perzistenciu: po reštarte sa obnovia dve počiatočné mock položky.
+Funguje navigácia medzi hubom, textovým offline katalógom so 62 cvikmi, dynamickým detailom a formulárom zápisu. `UserExercisesProvider` sprístupňuje zoznam aj `addUserExercise(exerciseId)` s immutable aktualizáciou a kontrolou duplicity a hub sa ukladá do AsyncStorage pod kľúčom `fitachiever:user-exercises:v1` (počiatočný hub je prázdny). Katalóg skrýva pridané cviky, má controlled vyhľadávanie s normalizáciou diakritiky, filter svalovej partie cez chipy a hlášku pri nulových výsledkoch.
 
-Formulár `exercise/[exerciseId]/log.tsx` sa otvára ako `formSheet`, umožňuje pridať a odstrániť série (aspoň jedna ostáva), validuje kg a opakovania a vytvára jeden `ExerciseLog` so všetkými sériami. `WorkoutLogsProvider` drží spoločnú históriu, načíta ju z AsyncStorage a po zmene ju ukladá cez front zápisov. Loading a chyba načítania blokujú obrazovky aj zápis; chyba uloženia ponúka opakovanie. Detail filtruje históriu podľa ID a zobrazuje najnovšie záznamy cez `WorkoutLogCard`.
+Formulár `exercise/[exerciseId]/log.tsx` sa otvára ako `formSheet`, umožňuje pridať a odstrániť série (aspoň jedna ostáva), validuje kg a opakovania a vytvára jeden `ExerciseLog` so všetkými sériami. `WorkoutLogsProvider` drží spoločnú históriu, načíta ju z AsyncStorage a po zmene ju ukladá cez front zápisov. Loading a chyba načítania logov blokujú obrazovky aj zápis; chyba uloženia ponúka opakovanie. Detail filtruje históriu podľa ID a zobrazuje najnovšie záznamy cez `WorkoutLogCard`.
 
 Vizuál používa tmavé theme tokeny a zelený accent. Android preblik pri navigácii sa vyriešil cez `SystemUI.setBackgroundColorAsync(colors.background)`; animácie sú zapnuté. Formulár má `ScrollView` a `KeyboardAvoidingView`, detail zatiaľ dlhú históriu nescrolluje.
 
-Najbližšie priority: perzistencia používateľovho hubu, manuálny test obnovy po úplnom reštarte, scrollovanie dlhej histórie a vyhľadávanie v katalógu. Potom posledný výkon na home, empty states a ďalší polish.
+Známe nedostatky:
+
+- `UserExercisesProvider` počas načítania neblokuje UI ako logy — hub krátko ukáže 0 cvikov a cvik pridaný počas načítania prepíše načítaný stav,
+- chyba načítania hubu sa nikde nezobrazí a ukladanie sa potichu vypne; texty chýb v provideri hovoria o „histórii“ (skopírované z logov),
+- formulár sa zavrie (`router.back()`) pred dokončením async zápisu,
+- tlačidlá „Späť“ v katalógu a detaile a podnadpis katalógu majú hardcoded svetlé farby mimo theme tokenov.
+
+Najbližšie priority (podľa acceptance scenára v requirements):
+
+1. odstránenie záznamu s potvrdením a prepočet „naposledy“,
+2. odobratie cviku z hubu bez zmazania logov,
+3. posledný dátum a výkon na karte v hube vrátane stavu „Ešte necvičené“,
+4. oprava známych nedostatkov `UserExercisesProvider` a manuálny test úplného reštartu,
+5. komentár a dátum/čas vo formulári, scrollovanie histórie, empty state hubu.
 
 ## Fáza 0 — rozhodnutia a setup
 
@@ -33,7 +46,7 @@ Hotovo, keď: telefón zobrazí jednoduchú FitAchiever home obrazovku a typeche
 ## Fáza 1 — statický osobný hub
 
 - [x] ručne vytvoriť 6–10 mock cvikov typu `Exercise`,
-- [x] vytvoriť 2–3 mock položky `UserExercise`,
+- [x] vytvoriť 2–3 mock položky `UserExercise` (neskôr nahradené prázdnym počiatočným hubom a perzistenciou),
 - [x] v hube vykresliť iba pridané cviky cez `FlatList`,
 - [x] presunúť používateľove cviky do spoločného React state cez provider a custom hook,
 - [x] vytvoriť zdieľanú presentational kartu `ExerciseListItem` pre hub aj katalóg,
@@ -42,7 +55,7 @@ Hotovo, keď: telefón zobrazí jednoduchú FitAchiever home obrazovku a typeche
 - [x] navrhnúť a aplikovať základ tmavého vizuálu cez spoločné tokeny,
 - [ ] doplniť empty state hubu,
 - [ ] obrázky a image placeholder — odložené, aktuálne používame textové karty,
-- [ ] dokončiť konzistenciu farieb katalógu a podporu light theme.
+- [ ] dokončiť konzistenciu farieb katalógu a detailu (hardcoded farby tlačidiel „Späť“ a podnadpisu) a podporu light theme.
 
 Učíš sa: type alias, props, `FlatList`, `renderItem`, `keyExtractor` a composition.
 
@@ -53,10 +66,10 @@ Hotovo, keď: hub zobrazuje iba pridané cviky, rovnaká karta funguje s obrázk
 - [x] vytvoriť samostatnú route/modal katalógu,
 - [x] vykresliť lokálny katalóg cez `FlatList`, stabilný `keyExtractor` a samostatný `ExerciseListItem`,
 - [x] pridať základný cell vizuál, medzery medzi položkami a návrat späť,
-- [ ] pridať controlled `TextInput`,
-- [ ] filtrovať podľa názvu bez mutácie zdrojového poľa,
-- [ ] pridať filter svalovej partie,
-- [ ] zobraziť zmysluplný stav pri nulových výsledkoch,
+- [x] pridať controlled `TextInput`,
+- [x] filtrovať podľa názvu bez mutácie zdrojového poľa (vrátane normalizácie diakritiky),
+- [x] pridať filter svalovej partie,
+- [x] zobraziť zmysluplný stav pri nulových výsledkoch,
 - [x] pridať vybraný cvik do hubu bez duplicity,
 - [x] skryť už pridané cviky pomocou odvodeného `availableExercises` (aktuálna voľba namiesto označovania).
 
@@ -119,14 +132,15 @@ Hotovo, keď: hub, katalóg, detail aj formulár pracujú s rovnakými dátami b
 - [x] ukladať logy po zmene až po úspešnom načítaní,
 - [x] serializovať zápisy cez front, chybu uloženia zobraziť s možnosťou retry,
 - [x] validovať načítaný JSON a štruktúru logov/sérií; pri chybe neprepisovať úložisko,
-- [ ] pridať načítanie a ukladanie `UserExercise` (hub je zatiaľ iba v pamäti),
+- [x] pridať načítanie a ukladanie `UserExercise` (`fitachiever:user-exercises:v1`, s validáciou a frontom zápisov),
+- [ ] zjednotiť loading/error stav hubu s logmi (blokovať UI počas načítania, zobraziť chybu načítania, opraviť texty chýb),
 - [ ] doplniť migráciu starších schém a obnovu pri poškodených dátach,
 - [ ] zobraziť priebeh/potvrdenie zápisu (modal sa zatiaľ zavrie pred dokončením async zápisu),
 - [ ] manuálne otestovať úplný reštart aplikácie.
 
 Učíš sa: async funkcie, `useEffect`, serializácia, loading/error state a jednoduchá migrácia schémy.
 
-Poznámka: AsyncStorage už používame pre workout logy pod kľúčom `fitachiever:workout-logs:v1`. Ak budú histórie a dotazy rásť, prehodnotíme SQLite. Manuálny reštartový test ešte nie je v konverzácii potvrdený.
+Poznámka: AsyncStorage používame pre workout logy pod kľúčom `fitachiever:workout-logs:v1` a pre hub pod kľúčom `fitachiever:user-exercises:v1`. Ak budú histórie a dotazy rásť, prehodnotíme SQLite. Manuálny reštartový test ešte nie je v konverzácii potvrdený.
 
 ## Fáza 7 — offline katalóg 100–200 cvikov
 
