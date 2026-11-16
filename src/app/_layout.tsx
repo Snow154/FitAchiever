@@ -24,7 +24,6 @@ export default function RootLayout() {
     <UserExercisesProvider>
       <WorkoutLogsProvider>
       <Stack
-        initialRouteName="index"
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.background },
