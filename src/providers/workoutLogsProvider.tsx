@@ -14,6 +14,7 @@ import type { ExerciseLog } from "@/types/workout";
 type WorkoutLogsContextValue = {
   logs: ExerciseLog[];
   addLog: (log: ExerciseLog) => void;
+  removeLog: (log: ExerciseLog["id"]) => void;
 };
 
 type WorkoutLogsProviderProps = {
@@ -86,6 +87,13 @@ export function WorkoutLogsProvider({children,}: WorkoutLogsProviderProps) {
         setWorkoutLogs((previous)=> [...previous, log]);
     }
 
+    function removeLog(log: ExerciseLog["id"]){
+        setWorkoutLogs((previous) => {
+            return previous.filter((ExerciseLog) => ExerciseLog.id !== log )
+            }
+        )
+    }
+
     if (isLoading || loadError) {
         return (
         <View style={styles.loadingContainer}>
@@ -97,7 +105,7 @@ export function WorkoutLogsProvider({children,}: WorkoutLogsProviderProps) {
     }
 
     return (
-        <WorkoutLogsContext.Provider value={{ logs, addLog }}>
+        <WorkoutLogsContext.Provider value={{ logs, addLog, removeLog }}>
         {children}
         </WorkoutLogsContext.Provider>
     );

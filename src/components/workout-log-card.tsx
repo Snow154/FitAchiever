@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, radius } from "@/constants/theme";
 import type { WorkoutSet } from "@/types/workout";
@@ -6,11 +6,13 @@ import type { WorkoutSet } from "@/types/workout";
 type WorkoutLogCardProps = {
   performedAt: string;
   sets: WorkoutSet[];
+  onDelete: () => void;
 };
 
 export function WorkoutLogCard({
   performedAt,
   sets,
+  onDelete
 }: WorkoutLogCardProps) {
   const date = new Date(performedAt);
 
@@ -35,6 +37,17 @@ export function WorkoutLogCard({
         </View>
 
         <Text style={styles.count}>{sets.length}× séria</Text>
+
+        <Pressable
+          style={({ pressed }) => [
+              styles.button,
+              { opacity: pressed ? 0.75 : 1 },
+            ]}
+          onPress={onDelete}
+          accessibilityLabel="Odstrániť záznam"
+        >
+          <Text>Odstrániť</Text>
+        </Pressable>
       </View>
 
       <View style={styles.sets}>
@@ -122,5 +135,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
     color: colors.text,
+  },
+
+  button: {
+    minHeight: 44,
+    justifyContent: "center",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 10,
   },
 });

@@ -3,19 +3,32 @@ import { getEquipmentLabel, muscleLabels } from "@/constants/exercise-labels";
 import { colors, radius, spacing } from "@/constants/theme";
 import { exercises } from "@/data/exercises";
 import { useWorkoutLogs } from "@/providers/workoutLogsProvider";
+import { ExerciseLog } from "@/types/workout";
 import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export default function ExerciseDetailScreen(){
     const {exerciseId} = useLocalSearchParams<{exerciseId?: string| string[];}>()
-    const {logs } = useWorkoutLogs();
+    const {logs, removeLog } = useWorkoutLogs();
     const id = Array.isArray(exerciseId) ? exerciseId[0] : exerciseId;
     const exercise = exercises.find((item) => item.id === id)
     
     
     const exerciseLogs = logs.filter((log)=> log.exerciseId === id).sort((a,b)=> b.performedAt.localeCompare(a.performedAt));
     
+    function confirmDelete(logId: ExerciseLog["id"]){
+    Alert.alert(
+              "Odstrániť záznam?",
+              "Naozaj chceš odstrániť tento záznam?",
+              [
+                  { text: "Odstrániť", style: "destructive", onPress: () => removeLog(logId) },
+                  { text: "Zrušiť", style: "cancel"}
+              ]
+              );
+  }
+
     if(!exercise){
         return (
             <SafeAreaView style={styles.container}>
@@ -70,6 +83,7 @@ export default function ExerciseDetailScreen(){
                       key={log.id}
                       performedAt={log.performedAt}
                       sets={log.sets}
+                      onDelete={()=> confirmDelete(log.id)}
                     />
                   ))}
                 </View>
